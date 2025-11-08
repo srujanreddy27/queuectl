@@ -1,6 +1,3 @@
-# QueueCTL Demo Commands - 1 Minute Demo Script
-# Copy and paste these commands during your demo recording
-
 # 1. Show help and version (5 seconds)
 queuectl --help
 
