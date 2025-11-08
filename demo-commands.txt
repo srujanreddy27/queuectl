@@ -1,0 +1,53 @@
+# QueueCTL Demo Commands - 1 Minute Demo Script
+# Copy and paste these commands during your demo recording
+
+# 1. Show help and version (5 seconds)
+queuectl --help
+
+# 2. View initial status (5 seconds)
+queuectl status
+
+# 3. Enqueue multiple jobs quickly (10 seconds)
+queuectl enqueue "echo 'Processing order #1001'"
+queuectl enqueue "echo 'Processing order #1002'"
+queuectl enqueue "echo 'Processing order #1003'"
+queuectl enqueue "sleep 2 && echo 'Long task completed'"
+queuectl enqueue "echo 'Quick task'"
+
+# 4. Check status to see pending jobs (5 seconds)
+queuectl status
+
+# 5. List all jobs (5 seconds)
+queuectl list
+
+# 6. Start multiple workers (5 seconds)
+queuectl worker start --count 2
+
+# 7. Watch status change in real-time (wait 3-4 seconds, then check)
+queuectl status
+
+# 8. List completed jobs (5 seconds)
+queuectl list --state completed
+
+# 9. Demonstrate configuration (8 seconds)
+queuectl config get
+queuectl config set max_retries 5
+queuectl config get max_retries
+
+# 10. Enqueue a failing job to show retry mechanism (5 seconds)
+queuectl enqueue "exit 1" --retries 2
+
+# 11. Watch it retry (wait 2-3 seconds)
+queuectl status
+
+# 12. Show DLQ functionality (5 seconds)
+queuectl dlq list
+
+# 13. Stop workers gracefully (3 seconds)
+queuectl worker stop
+
+# 14. Final status check (3 seconds)
+queuectl status
+
+# 15. Show persistence - jobs survive restart (2 seconds)
+queuectl list --limit 5

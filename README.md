@@ -2,6 +2,10 @@
 
 A command-line job queue system built with TypeScript and Node.js. This tool manages background tasks with automatic retries, multiple workers, and persistent storage.
 
+## Demo
+
+🎥 **[Watch Demo Video](YOUR_DEMO_LINK_HERE)** - See QueueCTL in action!
+
 ## Features
 
 - Queue shell commands for background execution
@@ -36,80 +40,94 @@ Requirements:
 
 Quick setup:
 
-Linux/Mac:
+**Linux/Mac:**
+```bash
 chmod +x setup.sh
 ./setup.sh
+```
 
-Windows:
+**Windows:**
+```powershell
 .\setup.ps1
+```
 
-Manual installation:
-
+**Manual installation:**
+```bash
 git clone https://github.com/srujanreddy27/queuectl.git
-
 cd queuectl
-
 npm install
-
 npm run build
-
 npm link
+```
 
 ## Quick Start
 
 Add a job:
-
+```bash
 queuectl enqueue "echo 'Hello, World!'"
+```
 
 Start workers:
-
+```bash
 queuectl worker start --count 2
+```
 
 Check status:
-
+```bash
 queuectl status
+```
 
 List completed jobs:
-
+```bash
 queuectl list --state completed
+```
 
 ## CLI Commands
 
-Job Management
+### Job Management
 
-Enqueue a job:
+**Enqueue a job:**
 
 Simple command:
-
+```bash
 queuectl enqueue "echo 'Hello World'"
+```
 
 With custom retry count:
-
+```bash
 queuectl enqueue "sleep 5" --retries 5
+```
 
 Using JSON format:
-
+```bash
 queuectl enqueue '{"command":"node script.js","max_retries":3}'
+```
 
 ### Worker Management
 
 #### Start Workers
 
+```bash
 # Start single worker
 queuectl worker start
 
 # Start multiple workers
 queuectl worker start --count 3
+```
 
 #### Stop Workers
 
+```bash
 queuectl worker stop
+```
 
 ### Status & Monitoring
 
 #### View Queue Status
 
+```bash
 queuectl status
+```
 
 **Output:**
 ```
@@ -130,6 +148,7 @@ Total Jobs: 23
 
 #### List Jobs
 
+```bash
 # List all jobs
 queuectl list
 
@@ -140,29 +159,37 @@ queuectl list --state dead
 
 # Limit results
 queuectl list --limit 10
+```
 
 ### Dead Letter Queue (DLQ)
 
 #### List DLQ Jobs
 
+```bash
 queuectl dlq list
+```
 
 #### Retry a Failed Job
 
+```bash
 queuectl dlq retry <job-id>
+```
 
 ### Configuration
 
 #### View Configuration
 
+```bash
 # View all settings
 queuectl config get
 
 # View specific setting
 queuectl config get max_retries
+```
 
 #### Update Configuration
 
+```bash
 # Set max retries
 queuectl config set max_retries 5
 
@@ -174,13 +201,14 @@ queuectl config set worker_poll_interval 1000
 
 # Set graceful shutdown timeout (ms)
 queuectl config set graceful_shutdown_timeout 30000
+```
 
 
 ## Architecture
 
-System Components
-```mermaid
+### System Components
 
+```mermaid
 graph TD
     CLI[QueueCTL CLI]
     CLI --> QM[Queue Manager]
@@ -191,7 +219,9 @@ graph TD
     CM --> JS
 ```
 
-Core Modules
+> 📐 For a more detailed architecture diagram, see [ARCHITECTURE.md](ARCHITECTURE.md)
+
+### Core Modules
 
 1. QueueManager - Handles job lifecycle, retry logic, and DLQ
 2. WorkerManager - Manages multiple worker processes
@@ -214,7 +244,7 @@ stateDiagram-v2
     DEAD --> [*]
 ```
 
-State Descriptions
+### State Descriptions
 
 | State | Description |
 |-------|-------------|
@@ -226,18 +256,19 @@ State Descriptions
 
 ## Configuration
 
-Default Configuration
+### Default Configuration
 
-json
+```json
 {
   "max_retries": 3,
   "backoff_base": 2,
   "worker_poll_interval": 1000,
   "graceful_shutdown_timeout": 30000
 }
+```
 
 
-Configuration Options
+### Configuration Options
 
 | Option | Description | Default |
 |--------|-------------|---------|
@@ -246,12 +277,13 @@ Configuration Options
 | `worker_poll_interval` | Worker polling interval in milliseconds | 1000 |
 | `graceful_shutdown_timeout` | Max time to wait for job completion on shutdown (ms) | 30000 |
 
-Retry Backoff Calculation
+### Retry Backoff Calculation
 
-
+```
 delay (seconds) = backoff_base ^ attempts
+```
 
-Example with backoff_base = 2:
+Example with `backoff_base = 2`:
 - Attempt 1: 2^1 = 2 seconds
 - Attempt 2: 2^2 = 4 seconds
 - Attempt 3: 2^3 = 8 seconds
@@ -259,76 +291,94 @@ Example with backoff_base = 2:
 
 ## Testing
 
-Automated Test Suite
+### Automated Test Suite
 
 Run the test suite:
 
-
+```bash
 # On Windows (PowerShell)
 .\test-scenarios.ps1
 
 # On Linux/Mac
 chmod +x test-scenarios.sh
 ./test-scenarios.sh
+```
 
 
-Manual Testing
+### Manual Testing
 
-Test 1: Basic job completion
+**Test 1: Basic job completion**
+```bash
 queuectl enqueue "echo 'Test job'"
 queuectl worker start --count 1
-(Wait a few seconds, then Ctrl+C)
+# Wait a few seconds, then Ctrl+C
 queuectl status
+```
 
-Test 2: Failed job with retry
+**Test 2: Failed job with retry**
+```bash
 queuectl enqueue "exit 1"
 queuectl worker start --count 1
-(Watch the job retry with exponential backoff)
+# Watch the job retry with exponential backoff
+```
 
-Test 3: Multiple workers
+**Test 3: Multiple workers**
+```bash
 for i in {1..10}; do queuectl enqueue "sleep 2 && echo 'Job $i'"; done
 queuectl worker start --count 3
+```
 
-Test 4: Persistence
+**Test 4: Persistence**
+```bash
 queuectl enqueue "echo 'Persistence test'"
 queuectl status
-(Restart the terminal)
+# Restart the terminal
 queuectl status  # Job should still be there
+```
 
-
-Test 5: Dead Letter Queue
+**Test 5: Dead Letter Queue**
+```bash
 queuectl enqueue "nonexistentcommand"
 queuectl worker start --count 1
-(Wait for retries to exhaust)
+# Wait for retries to exhaust
 queuectl dlq list
 queuectl dlq retry <job-id>
+```
 
 
 ## Examples
 
-Batch Processing
+**Batch Processing**
+```bash
 queuectl enqueue "node process-file.js file1.txt"
 queuectl enqueue "node process-file.js file2.txt"
 queuectl enqueue "node process-file.js file3.txt"
 queuectl worker start --count 2
+```
 
-Scheduled Tasks
+**Scheduled Tasks**
+```bash
 queuectl enqueue "pg_dump mydb > backup.sql"
 queuectl enqueue "find /var/log -mtime +30 -delete"
 queuectl enqueue "python generate_report.py"
+```
 
-API Calls
+**API Calls**
+```bash
 queuectl enqueue "curl -X POST https://api.example.com/webhook"
 queuectl enqueue "node send-email.js user@example.com"
+```
 
-Long-Running Jobs
+**Long-Running Jobs**
+```bash
 queuectl enqueue "ffmpeg -i input.mp4 -c:v libx264 output.mp4" --retries 1
 queuectl enqueue "node migrate-data.js" --retries 0
+```
 
 
 ## Design Decisions
 
-File-Based Storage
+### File-Based Storage
 
 I chose JSON file storage with atomic writes because:
 - Simple deployment (no external database required)
@@ -341,7 +391,7 @@ Trade-offs:
 - Not suitable for extremely high throughput
 - Limited query capabilities compared to databases
 
-Exponential Backoff
+### Exponential Backoff
 
 Configurable exponential backoff for retries:
 - Prevents overwhelming failing services
@@ -349,7 +399,7 @@ Configurable exponential backoff for retries:
 - Industry-standard retry pattern
 - Configurable to match different use cases
 
-Worker Architecture
+### Worker Architecture
 
 Polling-based workers with configurable interval:
 - Simple implementation
@@ -361,7 +411,7 @@ Trade-offs:
 - Slight delay between job availability and pickup
 - Continuous polling (mitigated by configurable interval)
 
-TypeScript Implementation
+### TypeScript Implementation
 
 Using TypeScript provides:
 - Type safety reduces runtime errors
@@ -369,7 +419,7 @@ Using TypeScript provides:
 - Self-documenting code
 - Easier maintenance
 
-CLI-First Design
+### CLI-First Design
 
 Command-line interface as primary interface:
 - Easy to script and automate
@@ -408,11 +458,11 @@ queuectl/
 
 ## Concurrency and Safety
 
-File Locking
+### File Locking
 
 The system uses file-based locking to prevent race conditions:
 
-typescript
+```typescript
 // Atomic lock acquisition
 private async acquireLock(timeout: number = 5000): Promise<void> {
   const startTime = Date.now();
@@ -424,20 +474,22 @@ private async acquireLock(timeout: number = 5000): Promise<void> {
   }
   fs.writeFileSync(this.lockFile, process.pid.toString());
 }
+```
 
 
-Atomic Writes
+### Atomic Writes
 
 All file writes use atomic rename operations:
 
-typescript
+```typescript
 // Write to temp file, then atomic rename
 const tempFile = `${this.jobsFile}.tmp`;
 fs.writeFileSync(tempFile, JSON.stringify(jobs, null, 2));
 fs.renameSync(tempFile, this.jobsFile);
+```
 
 
-Worker Isolation
+### Worker Isolation
 
 Each worker:
 - Has a unique ID
@@ -447,19 +499,19 @@ Each worker:
 
 ## Performance
 
-Throughput
+### Throughput
 
-- Small workloads (< 100 jobs/min): Excellent performance
-- Medium workloads (100-1000 jobs/min): Good performance
-- Large workloads (> 1000 jobs/min): Consider database-backed solution
+- **Small workloads** (< 100 jobs/min): Excellent performance
+- **Medium workloads** (100-1000 jobs/min): Good performance
+- **Large workloads** (> 1000 jobs/min): Consider database-backed solution
 
-Scalability
+### Scalability
 
-- Horizontal: Add more workers (--count N)
-- Vertical: Reduce worker_poll_interval for faster job pickup
-- Distributed: Run multiple instances with shared storage
+- **Horizontal:** Add more workers (`--count N`)
+- **Vertical:** Reduce `worker_poll_interval` for faster job pickup
+- **Distributed:** Run multiple instances with shared storage
 
-Optimization Tips
+### Optimization Tips
 
 1. Adjust poll interval: Lower for faster pickup, higher for less CPU usage
 2. Tune worker count: Match to CPU cores and job characteristics
@@ -468,17 +520,23 @@ Optimization Tips
 
 ## Troubleshooting
 
-Workers won't start:
+**Workers won't start:**
+```bash
 queuectl status
 rm -rf data/workers.pid
 queuectl worker start
+```
 
-Jobs stuck in processing:
-The system auto-resets stuck jobs on next worker start
+**Jobs stuck in processing:**
+```bash
+# The system auto-resets stuck jobs on next worker start
 queuectl worker start
+```
 
-Permission errors:
+**Permission errors:**
+```bash
 chmod -R 755 data/
+```
 
 ## Contributing
 

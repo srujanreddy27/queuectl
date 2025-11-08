@@ -6,7 +6,108 @@ QueueCTL is a production-grade job queue system designed with simplicity, reliab
 
 ## System Architecture
 
-### High-Level Architecture
+### High-Level Architecture Diagram
+
+```mermaid
+graph TB
+    subgraph "CLI Layer"
+        CLI[CLI Interface<br/>Commander.js]
+    end
+    
+    subgraph "Core Managers"
+        QM[Queue Manager<br/>Job Lifecycle & Retry Logic]
+        WM[Worker Manager<br/>Worker Pool Management]
+        CM[Config Manager<br/>Configuration]
+    end
+    
+    subgraph "Worker Pool"
+        W1[Worker 1<br/>Poll & Process]
+        W2[Worker 2<br/>Poll & Process]
+        WN[Worker N<br/>Poll & Process]
+    end
+    
+    subgraph "Execution Layer"
+        JE[Job Executor<br/>Command Execution]
+    end
+    
+    subgraph "Storage Layer"
+        JS[(Job Storage<br/>jobs.json)]
+        CS[(Config Storage<br/>config.json)]
+        PS[(PID Storage<br/>workers.pid)]
+    end
+    
+    CLI --> QM
+    CLI --> WM
+    CLI --> CM
+    
+    QM --> JS
+    CM --> CS
+    WM --> PS
+    
+    WM --> W1
+    WM --> W2
+    WM --> WN
+    
+    W1 --> QM
+    W2 --> QM
+    WN --> QM
+    
+    W1 --> JE
+    W2 --> JE
+    WN --> JE
+    
+    JE --> JS
+    
+    style CLI fill:#e1f5ff
+    style QM fill:#fff4e1
+    style WM fill:#fff4e1
+    style CM fill:#fff4e1
+    style W1 fill:#e8f5e9
+    style W2 fill:#e8f5e9
+    style WN fill:#e8f5e9
+    style JE fill:#fce4ec
+    style JS fill:#f3e5f5
+    style CS fill:#f3e5f5
+    style PS fill:#f3e5f5
+```
+
+### Component Interaction Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant CLI
+    participant QueueManager
+    participant JobStorage
+    participant Worker
+    participant JobExecutor
+    
+    User->>CLI: queuectl enqueue "command"
+    CLI->>QueueManager: enqueue(command)
+    QueueManager->>JobStorage: addJob(job)
+    JobStorage-->>QueueManager: job created
+    QueueManager-->>CLI: success
+    CLI-->>User: Job enqueued
+    
+    Note over Worker: Polling loop
+    Worker->>QueueManager: getNextJob()
+    QueueManager->>JobStorage: getNextPendingJob()
+    JobStorage-->>QueueManager: job
+    QueueManager-->>Worker: job
+    
+    Worker->>QueueManager: markProcessing(job)
+    Worker->>JobExecutor: execute(command)
+    JobExecutor-->>Worker: result
+    
+    alt Success
+        Worker->>QueueManager: markCompleted(job)
+    else Failure
+        Worker->>QueueManager: markFailed(job)
+        QueueManager->>QueueManager: scheduleRetry()
+    end
+```
+
+### ASCII Architecture (for terminals)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
