@@ -112,6 +112,7 @@ queuectl worker stop
 queuectl status
 
 **Output:**
+```
 📊 Queue Status
 
 ┌─────────────────────┬───────┐
@@ -125,6 +126,7 @@ queuectl status
 └─────────────────────┴───────┘
 
 Total Jobs: 23
+```
 
 #### List Jobs
 
@@ -378,8 +380,7 @@ Command-line interface as primary interface:
 - Simple integration with existing tools
 
 ## Project Structure
-
-
+```
 queuectl/
 ├── src/
 │   ├── types/
@@ -405,7 +406,7 @@ queuectl/
 ├── tsconfig.json
 ├── jest.config.js
 └── README.md
-
+```
 
 ## Concurrency and Safety
 
