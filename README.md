@@ -54,15 +54,19 @@ npm link
 ## Quick Start
 
 Add a job:
+
 queuectl enqueue "echo 'Hello, World!'"
 
 Start workers:
+
 queuectl worker start --count 2
 
 Check status:
+
 queuectl status
 
 List completed jobs:
+
 queuectl list --state completed
 
 ## CLI Commands
@@ -72,12 +76,15 @@ Job Management
 Enqueue a job:
 
 Simple command:
+
 queuectl enqueue "echo 'Hello World'"
 
 With custom retry count:
+
 queuectl enqueue "sleep 5" --retries 5
 
 Using JSON format:
+
 queuectl enqueue '{"command":"node script.js","max_retries":3}'
 
 ### Worker Management
@@ -161,64 +168,49 @@ queuectl config set worker_poll_interval 1000
 
 # Set graceful shutdown timeout (ms)
 queuectl config set graceful_shutdown_timeout 30000
+
+
+## Architecture
+
+System Components
+
+graph TD
+    CLI[QueueCTL CLI]
+    CLI --> QM[Queue Manager]
+    CLI --> WM[Worker Manager]
+    CLI --> CM[Config Manager]
+    QM --> JS[Job Storage<br/>File-based]
+    WM --> JS
+    CM --> JS
+
+![System components](image-1.png)
+
+Core Modules
+
+1. QueueManager - Handles job lifecycle, retry logic, and DLQ
+2. WorkerManager - Manages multiple worker processes
+3. Worker - Individual worker that processes jobs
+4. JobStorage - Persistent file-based storage with atomic operations
+5. JobExecutor - Executes shell commands safely
+6. ConfigManager - Manages system configuration
+
+## Job Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> PENDING
+    PENDING --> PROCESSING
+    PROCESSING --> COMPLETED: Success
+    PROCESSING --> FAILED: Failure
+    FAILED --> PENDING: Retry
+    FAILED --> DEAD: Max retries exceeded
+    COMPLETED --> [*]
+    DEAD --> [*]
 ```
+![Job](image.png)
 
-## 🏗️ Architecture
 
-### System Components
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                      QueueCTL CLI                       │
-└─────────────────────────────────────────────────────────┘
-                           │
-        ┌──────────────────┼──────────────────┐
-        │                  │                  │
-        ▼                  ▼                  ▼
-┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-│    Queue     │  │   Worker     │  │   Config     │
-│   Manager    │  │   Manager    │  │   Manager    │
-└──────────────┘  └──────────────┘  └──────────────┘
-        │                  │                  │
-        └──────────────────┼──────────────────┘
-                           ▼
-                  ┌──────────────┐
-                  │  Job Storage │
-                  │  (File-based)│
-                  └──────────────┘
-```
-
-### Core Modules
-
-1. **QueueManager** - Handles job lifecycle, retry logic, and DLQ
-2. **WorkerManager** - Manages multiple worker processes
-3. **Worker** - Individual worker that processes jobs
-4. **JobStorage** - Persistent file-based storage with atomic operations
-5. **JobExecutor** - Executes shell commands safely
-6. **ConfigManager** - Manages system configuration
-
-## 🔄 Job Lifecycle
-
-```
-┌─────────┐
-│ PENDING │ ◄──────────────────┐
-└────┬────┘                    │
-     │                         │
-     ▼                         │
-┌────────────┐           ┌─────────┐
-│ PROCESSING │           │ FAILED  │
-└─────┬──────┘           └────┬────┘
-      │                       │
-      ├─── Success ──► ┌──────────┐
-      │                │COMPLETED │
-      │                └──────────┘
-      │
-      └─── Failure ──► ┌─────────┐
-                       │  DEAD   │ (DLQ)
-                       └─────────┘
-```
-
-### State Descriptions
+State Descriptions
 
 | State | Description |
 |-------|-------------|
@@ -228,20 +220,20 @@ queuectl config set graceful_shutdown_timeout 30000
 | `failed` | Job failed but will be retried |
 | `dead` | Job permanently failed (moved to DLQ) |
 
-## ⚙️ Configuration
+## Configuration
 
-### Default Configuration
+Default Configuration
 
-```json
+json
 {
   "max_retries": 3,
   "backoff_base": 2,
   "worker_poll_interval": 1000,
   "graceful_shutdown_timeout": 30000
 }
-```
 
-### Configuration Options
+
+Configuration Options
 
 | Option | Description | Default |
 |--------|-------------|---------|
@@ -250,132 +242,91 @@ queuectl config set graceful_shutdown_timeout 30000
 | `worker_poll_interval` | Worker polling interval in milliseconds | 1000 |
 | `graceful_shutdown_timeout` | Max time to wait for job completion on shutdown (ms) | 30000 |
 
-### Retry Backoff Calculation
+Retry Backoff Calculation
 
-```
+
 delay (seconds) = backoff_base ^ attempts
 
 Example with backoff_base = 2:
 - Attempt 1: 2^1 = 2 seconds
 - Attempt 2: 2^2 = 4 seconds
 - Attempt 3: 2^3 = 8 seconds
-```
 
-## 🧪 Testing
 
-### Automated Test Suite
+## Testing
 
-Run the comprehensive test suite:
+Automated Test Suite
 
-```bash
+Run the test suite:
+
+
 # On Windows (PowerShell)
 .\test-scenarios.ps1
 
 # On Linux/Mac
 chmod +x test-scenarios.sh
 ./test-scenarios.sh
-```
 
-### Manual Testing
 
-#### Test 1: Basic Job Completion
+Manual Testing
 
-```bash
+Test 1: Basic job completion
 queuectl enqueue "echo 'Test job'"
 queuectl worker start --count 1
-# Wait a few seconds, then Ctrl+C
+(Wait a few seconds, then Ctrl+C)
 queuectl status
-```
 
-#### Test 2: Failed Job with Retry
-
-```bash
+Test 2: Failed job with retry
 queuectl enqueue "exit 1"
 queuectl worker start --count 1
-# Watch the job retry with exponential backoff
-```
+(Watch the job retry with exponential backoff)
 
-#### Test 3: Multiple Workers
-
-```bash
-# Enqueue multiple jobs
+Test 3: Multiple workers
 for i in {1..10}; do queuectl enqueue "sleep 2 && echo 'Job $i'"; done
-
-# Start multiple workers
 queuectl worker start --count 3
-```
 
-#### Test 4: Persistence
-
-```bash
+Test 4: Persistence
 queuectl enqueue "echo 'Persistence test'"
 queuectl status
-# Restart the terminal/system
+(Restart the terminal)
 queuectl status  # Job should still be there
-```
 
-#### Test 5: DLQ
 
-```bash
+Test 5: Dead Letter Queue
 queuectl enqueue "nonexistentcommand"
 queuectl worker start --count 1
-# Wait for retries to exhaust
+(Wait for retries to exhaust)
 queuectl dlq list
 queuectl dlq retry <job-id>
-```
 
-## 📚 Examples
 
-### Example 1: Batch Processing
+## Examples
 
-```bash
-# Process multiple files
+Batch Processing
 queuectl enqueue "node process-file.js file1.txt"
 queuectl enqueue "node process-file.js file2.txt"
 queuectl enqueue "node process-file.js file3.txt"
-
-# Start workers
 queuectl worker start --count 2
-```
 
-### Example 2: Scheduled Tasks
-
-```bash
-# Backup database
+Scheduled Tasks
 queuectl enqueue "pg_dump mydb > backup.sql"
-
-# Clean up old logs
 queuectl enqueue "find /var/log -mtime +30 -delete"
-
-# Generate reports
 queuectl enqueue "python generate_report.py"
-```
 
-### Example 3: API Calls
-
-```bash
-# Make HTTP requests
+API Calls
 queuectl enqueue "curl -X POST https://api.example.com/webhook"
 queuectl enqueue "node send-email.js user@example.com"
-```
 
-### Example 4: Long-Running Jobs
-
-```bash
-# Video processing
+Long-Running Jobs
 queuectl enqueue "ffmpeg -i input.mp4 -c:v libx264 output.mp4" --retries 1
-
-# Data migration
 queuectl enqueue "node migrate-data.js" --retries 0
-```
 
-## 🎨 Design Decisions
 
-### 1. File-Based Storage
+## Design Decisions
 
-**Choice:** JSON file storage with atomic writes
+File-Based Storage
 
-**Rationale:**
+I chose JSON file storage with atomic writes because:
 - Simple deployment (no external database required)
 - Easy to inspect and debug
 - Atomic file operations prevent corruption
@@ -424,8 +375,8 @@ Command-line interface as primary interface:
 
 ## Project Structure
 
-```
-windsurf-project/
+
+queuectl/
 ├── src/
 │   ├── types/
 │   │   └── index.ts           # Type definitions
@@ -450,7 +401,7 @@ windsurf-project/
 ├── tsconfig.json
 ├── jest.config.js
 └── README.md
-```
+
 
 ## Concurrency and Safety
 
@@ -458,7 +409,7 @@ File Locking
 
 The system uses file-based locking to prevent race conditions:
 
-```typescript
+typescript
 // Atomic lock acquisition
 private async acquireLock(timeout: number = 5000): Promise<void> {
   const startTime = Date.now();
@@ -470,18 +421,18 @@ private async acquireLock(timeout: number = 5000): Promise<void> {
   }
   fs.writeFileSync(this.lockFile, process.pid.toString());
 }
-```
+
 
 Atomic Writes
 
 All file writes use atomic rename operations:
 
-```typescript
+typescript
 // Write to temp file, then atomic rename
 const tempFile = `${this.jobsFile}.tmp`;
 fs.writeFileSync(tempFile, JSON.stringify(jobs, null, 2));
 fs.renameSync(tempFile, this.jobsFile);
-```
+
 
 Worker Isolation
 
@@ -526,10 +477,6 @@ queuectl worker start
 Permission errors:
 chmod -R 755 data/
 
-## License
-
-MIT License - see LICENSE file for details
-
 ## Contributing
 
 Contributions are welcome. Please submit a pull request.
@@ -537,7 +484,5 @@ Contributions are welcome. Please submit a pull request.
 ## Support
 
 For issues and questions, please open an issue on GitHub.
-
----
 
 Built with Node.js and TypeScript
