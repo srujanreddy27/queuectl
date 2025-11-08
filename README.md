@@ -179,6 +179,7 @@ queuectl config set graceful_shutdown_timeout 30000
 ## Architecture
 
 System Components
+```mermaid
 
 graph TD
     CLI[QueueCTL CLI]
@@ -188,8 +189,7 @@ graph TD
     QM --> JS[Job Storage<br/>File-based]
     WM --> JS
     CM --> JS
-
-![System components](image-1.png)
+```
 
 Core Modules
 
@@ -213,8 +213,6 @@ stateDiagram-v2
     COMPLETED --> [*]
     DEAD --> [*]
 ```
-![Job](image.png)
-
 
 State Descriptions
 
