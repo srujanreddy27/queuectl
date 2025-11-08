@@ -46,9 +46,13 @@ Windows:
 Manual installation:
 
 git clone https://github.com/srujanreddy27/queuectl.git
+
 cd queuectl
+
 npm install
+
 npm run build
+
 npm link
 
 ## Quick Start
