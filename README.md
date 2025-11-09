@@ -4,7 +4,7 @@ A command-line job queue system built with TypeScript and Node.js. This tool man
 
 ## Demo
 
-🎥 **[Watch Demo Video](YOUR_DEMO_LINK_HERE)** - See QueueCTL in action!
+**[Watch Demo Video](https://drive.google.com/file/d/1byqAf0LrRhWOWZkEIYAr2Rc7buBauuHF/view?usp=sharing)** - See QueueCTL in action!
 
 ## Features
 
@@ -131,7 +131,7 @@ queuectl status
 
 **Output:**
 ```
-📊 Queue Status
+Queue Status
 
 ┌─────────────────────┬───────┐
 │ State               │ Count │

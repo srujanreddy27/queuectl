@@ -1,50 +1,54 @@
-# 1. Show help and version (5 seconds)
+# 1. Show help and version
 queuectl --help
 
-# 2. View initial status (5 seconds)
+# 2. View initial status
 queuectl status
 
-# 3. Enqueue multiple jobs quickly (10 seconds)
+# 3. Enqueue multiple jobs
 queuectl enqueue "echo 'Processing order #1001'"
 queuectl enqueue "echo 'Processing order #1002'"
 queuectl enqueue "echo 'Processing order #1003'"
-queuectl enqueue "sleep 2 && echo 'Long task completed'"
-queuectl enqueue "echo 'Quick task'"
 
-# 4. Check status to see pending jobs (5 seconds)
+# 4. Check status to see pending jobs
 queuectl status
 
-# 5. List all jobs (5 seconds)
+# 5. List all jobs
 queuectl list
 
-# 6. Start multiple workers (5 seconds)
+# 6. Start multiple workers
 queuectl worker start --count 2
 
-# 7. Watch status change in real-time (wait 3-4 seconds, then check)
+# 7. Watch status change
 queuectl status
 
-# 8. List completed jobs (5 seconds)
+# 8. List completed jobs
 queuectl list --state completed
 
-# 9. Demonstrate configuration (8 seconds)
+# 9. Demonstrate configuration
 queuectl config get
-queuectl config set max_retries 5
+queuectl config set max_retries 4
 queuectl config get max_retries
 
-# 10. Enqueue a failing job to show retry mechanism (5 seconds)
+# 10. Enqueue failing jobs to show retry mechanism
 queuectl enqueue "exit 1" --retries 2
+queuectl enqueue "nonexistentcommand" --retries 3
 
-# 11. Watch it retry (wait 2-3 seconds)
+# 11. Start worker to watch retry with exponential backoff
+queuectl worker start --count 1
+# Wait to see retries, then Ctrl+C
+
+# 12. Check status and DLQ
 queuectl status
-
-# 12. Show DLQ functionality (5 seconds)
 queuectl dlq list
 
-# 13. Stop workers gracefully (3 seconds)
+# 13. Retry a job from DLQ (replace <job-id> with actual ID)
+# queuectl dlq retry <job-id>
+
+# 14. Stop workers gracefully
 queuectl worker stop
 
-# 14. Final status check (3 seconds)
+# 15. Final status check
 queuectl status
 
-# 15. Show persistence - jobs survive restart (2 seconds)
-queuectl list --limit 5
+# 16. Show persistence
+queuectl list --limit 3
