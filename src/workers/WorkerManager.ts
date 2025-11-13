@@ -140,8 +140,8 @@ export class WorkerManager {
       process.exit(0);
     };
 
-    process.on('SIGTERM', () => shutdown('SIGTERM'));
-    process.on('SIGINT', () => shutdown('SIGINT'));
+    Deno.addSignalListener('SIGTERM', () => shutdown('SIGTERM'));
+    Deno.addSignalListener('SIGINT', () => shutdown('SIGINT'));
   }
 
   /**
