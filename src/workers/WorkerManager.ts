@@ -137,7 +137,7 @@ export class WorkerManager {
 
       console.log(`\nReceived ${signal}, shutting down gracefully...`);
       await this.stop();
-      process.exit(0);
+      Deno.exit(0);
     };
 
     Deno.addSignalListener('SIGTERM', () => shutdown('SIGTERM'));
