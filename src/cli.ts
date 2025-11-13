@@ -8,7 +8,7 @@ import { WorkerManager } from './workers/WorkerManager';
 import { JobState } from './types';
 
 const program = new Command();
-const DATA_DIR = process.env.QUEUECTL_DATA_DIR || './data';
+const DATA_DIR = process.env.QUEUECTL_DATA_DIR ?? './data';
 
 program
   .name('queuectl')
@@ -49,7 +49,7 @@ program
       console.log(chalk.gray(`Max Retries: ${job.max_retries}`));
     } catch (error) {
       console.error(chalk.red('✗ Failed to enqueue job:'), error);
-      process.exit(1);
+      Deno.exit(1);
     }
   });
 
@@ -79,7 +79,7 @@ workerCmd
       await workerManager.keepAlive();
     } catch (error) {
       console.error(chalk.red('✗ Failed to start workers:'), error);
-      process.exit(1);
+      Deno.exit(1);
     }
   });
 
@@ -93,7 +93,7 @@ workerCmd
       console.log(chalk.green('✓ Workers stopped'));
     } catch (error) {
       console.error(chalk.red('✗ Failed to stop workers:'), error);
-      process.exit(1);
+      Deno.exit(1);
     }
   });
 
@@ -127,7 +127,7 @@ program
       console.log(chalk.gray(`\nTotal Jobs: ${stats.pending + stats.processing + stats.completed + stats.failed + stats.dead}`));
     } catch (error) {
       console.error(chalk.red('✗ Failed to get status:'), error);
-      process.exit(1);
+      Deno.exit(1);
     }
   });
 
@@ -193,7 +193,7 @@ program
       console.log(chalk.gray(`\nShowing ${jobs.length} job(s)`));
     } catch (error) {
       console.error(chalk.red('✗ Failed to list jobs:'), error);
-      process.exit(1);
+      Deno.exit(1);
     }
   });
 
@@ -242,7 +242,7 @@ dlqCmd
       console.log(chalk.gray(`\nTotal: ${jobs.length} job(s) in DLQ`));
     } catch (error) {
       console.error(chalk.red('✗ Failed to list DLQ:'), error);
-      process.exit(1);
+      Deno.exit(1);
     }
   });
 
@@ -262,7 +262,7 @@ dlqCmd
       }
     } catch (error) {
       console.error(chalk.red('✗ Failed to retry job:'), error);
-      process.exit(1);
+      Deno.exit(1);
     }
   });
 
@@ -298,7 +298,7 @@ configCmd
       }
     } catch (error) {
       console.error(chalk.red('✗ Failed to get config:'), error);
-      process.exit(1);
+      Deno.exit(1);
     }
   });
 
@@ -321,7 +321,7 @@ configCmd
       console.log(chalk.green(`✓ Set ${key} = ${numValue}`));
     } catch (error) {
       console.error(chalk.red('✗ Failed to set config:'), error);
-      process.exit(1);
+      Deno.exit(1);
     }
   });
 
